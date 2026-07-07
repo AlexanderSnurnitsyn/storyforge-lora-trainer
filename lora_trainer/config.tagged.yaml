@@ -1,0 +1,11 @@
+# Прогон С тегами. Расширяет базовый config.yaml, меняет только корпус и имя.
+# fmt:auto определит instruction по полям prompt/completion -> промпт маскируется,
+# учится только текст сцены.
+extends: config.yaml
+
+run:
+  name: "tagged-1900-r16-e1"
+
+data:
+  train_file: "corpus/corpus_tagged.train.jsonl"
+  val_file:   "corpus/corpus_tagged.val.jsonl"

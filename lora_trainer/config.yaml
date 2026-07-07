@@ -1,0 +1,70 @@
+# ════════════════════════════════════════════════════════════════════
+# StoryForge LoRA — БАЗОВЫЙ конфиг для A/B (plain vs tagged).
+# Тут всё ОБЩЕЕ для обоих прогонов. Отличия (корпус + имя) — в
+# config.plain.yaml и config.tagged.yaml, которые расширяют этот файл.
+# Запуск НЕ этого файла напрямую, а:
+#   python train.py --config config.plain.yaml
+#   python train.py --config config.tagged.yaml
+# ════════════════════════════════════════════════════════════════════
+
+run:
+  name: null                    # переопределяется в plain/tagged
+  runs_dir: "runs"
+
+model:
+  base_model: "mlabonne/Meta-Llama-3.1-8B-Instruct-abliterated"
+  trust_remote_code: false
+  load_in_4bit: true
+
+data:
+  # train_file/val_file ЗАДАЮТСЯ в plain/tagged — тут не указываем.
+  max_seq_len: 2048             # сцены <=1700 est-токенов + tag-промпт влезают
+  fmt: "auto"                   # text для plain, instruction для tagged — определит сам
+  text_field: "text"
+  min_chars: 1
+  drop_overlong: true           # страховка: если сцена+промпт > окна — выбросить, не резать молча
+  add_eos: true
+  num_proc: 1
+
+lora:
+  r: 16
+  alpha: 16                     # alpha == r: без раздувания LoRA-обновлений (против переобучения)
+  dropout: 0.05                 # немного регуляризации на маленьком корпусе
+  bias: "none"
+  target_modules:               # ТОЛЬКО внимание — учим стиль/связи, не факты (меньше переобучение)
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+
+train:
+  epochs: 1.0                   # один проход: на ~1900 сценах 2-3 эпохи ты уже переобучал
+  per_device_batch_size: 1
+  grad_accum: 8                 # эффективный батч = 16
+  lr: 0.0001                    # мягче дефолтного 2e-4 — стабильнее, меньше перегиб
+  weight_decay: 0.0
+  warmup_ratio: 0.03
+  lr_scheduler: "cosine"
+  optimizer: "adamw_8bit"
+  max_grad_norm: 1.0
+  logging_steps: 5
+  eval_strategy: "steps"        # ВКЛючаем валидацию — видеть train/val расхождение
+  eval_steps: 25
+  save_strategy: "steps"
+  save_steps: 25
+  save_total_limit: null
+  resume: true
+  seed: 42                      # ОДИН seed для обоих прогонов — критично для A/B
+  group_by_length: true
+  report_to: "none"
+
+gen:
+  max_new_tokens: 2500
+  temperature: 0.8
+  top_p: 0.9
+  top_k: 50
+  repetition_penalty: 1.1
+  do_sample: true
+
+export:
+  gguf_quant: "q4_k_m"

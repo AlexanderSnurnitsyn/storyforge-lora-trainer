@@ -1,0 +1,11 @@
+# Keyword list for tagging scenes to train on.
+# One term per line. '#' starts a comment. Whole-word, case-insensitive.
+# TUNE THIS TO YOUR CORPUS: add the words your own writing actually uses,
+# and remove any that produce false positives. Multi-word phrases are allowed.
+#
+# Tip: run  inspect_db.py --kw-report  to see how many scenes each setting tags,
+# then adjust this list and the --min-hits threshold in build_corpus.py.
+
+magic
+sword
+attack

@@ -1,0 +1,9 @@
+# Прогон БЕЗ тегов. Расширяет базовый config.yaml, меняет только корпус и имя.
+extends: config.yaml
+
+run:
+  name: "plain-1900-r16-e1"
+
+data:
+  train_file: "corpus/corpus.train.jsonl"
+  val_file:   "corpus/corpus.val.jsonl"
